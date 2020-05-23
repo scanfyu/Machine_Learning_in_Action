@@ -1,5 +1,9 @@
 import numpy as np
 import operator
+import os
+
+import matplotlib
+import matplotlib.pyplot as plt
 
 def createDataSet():
     # 四组二维特征
@@ -104,8 +108,53 @@ def file2matrix(filename):
     return returnMat, classLabelVector
 
 
+# 归一化特征值
+def autoNorm(dataSet):
+    minVals = dataSet.min(0)
+    maxVals = dataSet.max(0)
+    ranges = maxVals - minVals
+    normDataSet = np.zeros(np.shape(dataSet))
+    m = dataSet.shape[0]
+    normDataSet = dataSet - np.tile(minVals, (m,1))
+    normDataSet = normDataSet/np.tile(ranges, (m,1))
+    return normDataSet, ranges, minVals
+
+
+# 分类器针对约会网站的测试代码
+def datingClassTest():
+    # 取所有数据的10% hoRatio越小，错误率越低
+    hoRatio = 0.10
+
+    # 将返回的特征矩阵和分类向量分别存储到datingDataMat和datingLabels中
+    filename = "datingTestSet.txt"
+    current_path = os.path.dirname(__file__)
+    datingDataMat, datingLabels = file2matrix(current_path+"/"+filename)
+    # 数据归一化，返回归一化数据结果，数据范围，最小值
+    normMat, ranges, minVals = autoNorm(datingDataMat)
+    # 获取normMat的行数
+    m = normMat.shape[0]
+    # 10%的测试数据的个数
+    numTestVecs = int(m * hoRatio)
+    # 分类错误计数
+    errorCount = 0.0
+    for i in range(numTestVecs):
+        # 前numTestVecs个数据作为测试集，后m-numTestVecs个数据作为训练集
+        # k选择label数+1（结果比较好）
+        classifierResult = classify0(normMat[i,:], normMat[numTestVecs:m,:],\
+                                     datingLabels[numTestVecs:m], 4)
+        print("分类结果:%d\t真实类别:%d" % (classifierResult, datingLabels[i]))
+        if classifierResult != datingLabels[i]:
+            errorCount += 1.0
+    print("错误率:%f%%" % (errorCount/float(numTestVecs)*100))
+
+
+
 if __name__ == "__main__":
     filename = "datingTestSet.txt"
-    datingDataMat, datingLabels = file2matrix(filename)
-    print(type(datingDataMat))
-    print(type(datingLabels))
+    current_path = os.path.dirname(__file__)
+    datingDataMat, datingLabels = file2matrix(current_path+"/"+filename)
+    
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.scatter(datingDataMat[:,1], datingDataMat[:,2], 15.0*np.array(datingLabels), 15.0*np.array(datingLabels))
+    plt.show()

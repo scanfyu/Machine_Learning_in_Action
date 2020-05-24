@@ -1,9 +1,12 @@
 import numpy as np
 import operator
 import os
+import time
 
 import matplotlib
+import matplotlib.lines as mlines
 import matplotlib.pyplot as plt
+plt.rcParams['font.sans-serif']=['SimHei']
 
 def createDataSet():
     # 四组二维特征
@@ -108,6 +111,77 @@ def file2matrix(filename):
     return returnMat, classLabelVector
 
 
+
+def showdatas(datingDataMat, datingLabels):
+    """
+    函数说明：可视化数据
+
+    Parameters:
+        datingDataMat - 特征矩阵
+        datingLabels - 分类Label
+        
+    Returns:
+        None
+        
+    Modify:
+        2020-05-23
+    """
+    # 将fig画布分隔成1行1列，不共享x轴和y轴，fig画布的大小为（13，8）
+    # 当nrows=2，ncols=2时，代表fig画布被分为4个区域，axs[0][0]代表第一行第一个区域
+    fig, axs = plt.subplots(nrows=2, ncols=2, sharex=False, sharey=False, figsize=(13, 8))
+    # 获取datingLabels的行数作为label的个数
+    # numberOfLabels = len(datingLabels)
+    # label的颜色配置矩阵
+    LabelsColors = []
+    for i in datingLabels:
+        # didntLike
+        if i == 1:
+            LabelsColors.append('black')
+        # smallDoses
+        if i == 2:
+            LabelsColors.append('orange')
+        # largeDoses
+        if i == 3:
+            LabelsColors.append('red')
+    # 画出散点图，以datingDataMat矩阵第一列为x，第二列为y，散点大小为15, 透明度为0.5
+    axs[0][0].scatter(x=datingDataMat[:,0], y=datingDataMat[:,1], color=LabelsColors, s=15, alpha=.5)
+    # 设置标题，x轴label， y轴label
+    axs0_title_text = axs[0][0].set_title(u'每年获得的飞行常客里程数与玩视频游戏所消耗时间占比')
+    axs0_xlabel_text = axs[0][0].set_xlabel(u'每年获得的飞行常客里程数')
+    axs0_ylabel_text = axs[0][0].set_ylabel(u'玩视频游戏所消耗时间占比')
+    plt.setp(axs0_title_text, size=9, weight='bold', color='red')
+    plt.setp(axs0_xlabel_text, size=7, weight='bold', color='black')
+    plt.setp(axs0_ylabel_text, size=7, weight='bold', color='black')
+    # 画出散点图，以datingDataMat矩阵第一列为x，第三列为y，散点大小为15, 透明度为0.5
+    axs[0][1].scatter(x=datingDataMat[:,0], y=datingDataMat[:,2], color=LabelsColors, s=15, alpha=.5)
+    # 设置标题，x轴label， y轴label
+    axs1_title_text = axs[0][1].set_title(u'每年获得的飞行常客里程数与每周消费的冰淇淋公升数')
+    axs1_xlabel_text = axs[0][1].set_xlabel(u'每年获得的飞行常客里程数')
+    axs1_ylabel_text = axs[0][1].set_ylabel(u'每周消费的冰淇淋公升数')
+    plt.setp(axs1_title_text, size=9, weight='bold', color='red')
+    plt.setp(axs1_xlabel_text, size=7, weight='bold', color='black')
+    plt.setp(axs1_ylabel_text, size=7, weight='bold', color='black')
+    # 画出散点图，以datingDataMat矩阵第二列为x，第三列为y，散点大小为15, 透明度为0.5
+    axs[1][0].scatter(x=datingDataMat[:,1], y=datingDataMat[:,2], color=LabelsColors, s=15, alpha=.5)
+    # 设置标题，x轴label， y轴label
+    axs2_title_text = axs[1][0].set_title(u'玩视频游戏所消耗时间占比与每周消费的冰淇淋公升数')
+    axs2_xlabel_text = axs[1][0].set_xlabel(u'玩视频游戏所消耗时间占比')
+    axs2_ylabel_text = axs[1][0].set_ylabel(u'每周消费的冰淇淋公升数')
+    plt.setp(axs2_title_text, size=9, weight='bold', color='red')
+    plt.setp(axs2_xlabel_text, size=7, weight='bold', color='black')
+    plt.setp(axs2_ylabel_text, size=7, weight='bold', color='black')
+    # 设置图例
+    didntLike = mlines.Line2D([], [], color='black', marker='.', markersize=6, label='didntLike')
+    smallDoses = mlines.Line2D([], [], color='orange', marker='.', markersize=6, label='smallDoses')
+    largeDoses = mlines.Line2D([], [], color='red', marker='.', markersize=6, label='largeDoses')
+    # 添加图例
+    axs[0][0].legend(handles=[didntLike, smallDoses, largeDoses])
+    axs[0][1].legend(handles=[didntLike, smallDoses, largeDoses])
+    axs[1][0].legend(handles=[didntLike, smallDoses, largeDoses])
+    # 显示图片
+    plt.show()
+
+
 # 归一化特征值
 def autoNorm(dataSet):
     minVals = dataSet.min(0)
@@ -122,6 +196,20 @@ def autoNorm(dataSet):
 
 # 分类器针对约会网站的测试代码
 def datingClassTest():
+    """
+    函数说明：对已知数据进行分类。
+    读入数据，归一化，取10%数据作为测试机，其他数据作为训练集
+
+    Parameters:
+        filename - 文件名
+        
+    Returns:
+        returnMat - 特征矩阵
+        classLabelVector - 分类label向量
+        
+    Modify:
+        2020-05-18
+    """
     # 取所有数据的10% hoRatio越小，错误率越低
     hoRatio = 0.10
 
@@ -148,13 +236,82 @@ def datingClassTest():
     print("错误率:%f%%" % (errorCount/float(numTestVecs)*100))
 
 
+def classifyPerson():
+    """
+    函数说明：通过输入一个人的三围特征，进行分类输出
 
-if __name__ == "__main__":
+    Parameters:
+        None
+        
+    Returns:
+        None
+        
+    Modify:
+        2020-05-23
+    """
+    # 输出结果
+    resultList = ['讨厌', '有些喜欢', '非常喜欢']
+    # 三维特征用户输入
+    percentTats = float(input("玩视频游戏所消耗时间百分比："))
+    ffMiles = float(input("每年获得的飞行常客里程数："))
+    iceCream = float(input("每周消费的冰淇淋公升数："))
+    # 打开的文件名
     filename = "datingTestSet.txt"
+    # 打开并处理数据
     current_path = os.path.dirname(__file__)
     datingDataMat, datingLabels = file2matrix(current_path+"/"+filename)
+    # 训练集归一化
+    normMat, ranges, minVals = autoNorm(datingDataMat)
+    # 生成NumPy数组，测试集
+    inArr = np.array([percentTats, ffMiles, iceCream])
+    # 测试集归一化
+    norminArr = (inArr - minVals) / ranges
+    # 返回分类结果
+    classifierResult = classify0(norminArr, normMat, datingLabels, 4)
+    # 打印结果
+    print("你可能%s这个人" % (resultList[classifierResult - 1]))
+
+
+def main():
+    start = time.time()
+    current_path = os.path.dirname(__file__)
+    # 打开文件的名称
+    filename = "datingTestSet.txt"
+    # 打开并处理数据
+    datingDataMat, datingLabels = file2matrix(current_path + '/' + filename)
+    # print(datingDataMat)
+    # print(datingLabels)
+
+    # # 数据可视化
+    # showdatas(datingDataMat, datingLabels)
+    # 训练集归一化
+    normDataset, ranges, minVals = autoNorm(datingDataMat)
+    # print(normDataset)
+    # print(ranges)
+    # print(minVals)
+    # classifyPerson()
+
+    # 创建数据集
+    group, labels = createDataSet()
+    # 测试集
+    test = [100,100]
+    # kNN分类
+    test_class = classify0(test, group, labels, 3)
+    # 打印分类结果
+    print(test_class)
+    end = time.time()
+    # 打印程序运行时间
+    print('Running time: %f Seconds'%(end-start))
+
+
+if __name__ == "__main__":
+    # filename = "datingTestSet.txt"
+    # current_path = os.path.dirname(__file__)
+    # datingDataMat, datingLabels = file2matrix(current_path+"/"+filename)
     
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    ax.scatter(datingDataMat[:,1], datingDataMat[:,2], 15.0*np.array(datingLabels), 15.0*np.array(datingLabels))
-    plt.show()
+    # fig = plt.figure()
+    # ax = fig.add_subplot(111)
+    # ax.scatter(datingDataMat[:,1], datingDataMat[:,2], 15.0*np.array(datingLabels), 15.0*np.array(datingLabels))
+    # plt.show()
+
+    main()

@@ -8,4 +8,6 @@
 @Desc   ：
 =================================================='''
 import bayes
-listOPosts, listClasses = bayes.load
+listOPosts, listClasses = bayes.loadDataSet()
+print(listOPosts)
+print(listClasses)
